@@ -6,7 +6,7 @@ const User = require("../models/user");
 exports.signup = (req, res, next) => {
 
   const saltRounds = 10;
-  const myPlaintextPassword = req.body.pass;
+  const myPlaintextPassword = req.body.password;
 console.log(req.file);
 
   bcrypt.genSalt(saltRounds, function (err, salt) {
