@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
+require("dotenv").config();
 const User = require("../models/user");
 
 //User Registration
 exports.signup = (req, res, next) => {
-
   const saltRounds = 10;
   const myPlaintextPassword = req.body.password;
-console.log(req.file);
+  console.log(req.file);
 
   bcrypt.genSalt(saltRounds, function (err, salt) {
     bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
@@ -20,7 +21,10 @@ console.log(req.file);
         address: req.body.address,
         mobile_no: req.body.mobile_no,
         ward: req.body.ward,
-        image: (typeof req.file !== "undefined") ? req.file.path : 'uploads\\avatar.png'
+        image:
+          typeof req.file !== "undefined"
+            ? req.file.path
+            : "uploads\\avatar.png",
       });
 
       user
@@ -33,7 +37,7 @@ console.log(req.file);
             email: result.email,
             credit: result.credit,
             ward: result.ward,
-            image:result.image
+            image: result.image,
           });
         })
         .catch((err) => {
@@ -42,4 +46,51 @@ console.log(req.file);
         });
     });
   });
+};
+
+//UserLogin
+exports.signin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  User.findOne({ email: email }, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(404).json(new Error("Failed"));
+    }
+    //  else {
+    //   console.log(result);
+    // }
+  })
+    .then((user) => {
+      if (user == null) {
+        //console.log("Auth Failed");
+        res.status(401).json("Auth Failed");
+      } else {
+        bcrypt.compare(password, user.password).then(function (result) {
+          // result == true
+          if (result) {
+            //Token generation
+            try {
+              const token = jwt.sign(
+                {
+                  id: user._id,
+                  name: user.name,
+                },
+                process.env.SECRET_KEY,
+                { expiresIn: "24h" }
+              );
+              res.status(200).json({ access_token: token });
+            } catch (e) {
+              throw Error("Error while Login");
+            }
+          } else {
+            res.status(401).json("Auth Failed");
+          }
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 };

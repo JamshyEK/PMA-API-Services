@@ -37,32 +37,6 @@ const upload = multer({
 
 router.post("/signup",upload.single("profileImage"), userController.signup);
 
-// router.post("/signin", (req, res, next) => {
-//   const email = req.body.email;
-//   const password = req.body.password;
-
-//   user
-//     .findOne({ email: email }, (err, result) => {
-//       if (err) {
-//         console.log(err);
-//       } else {
-//         console.log(result);
-//       }
-//     })
-//     .then((user) => {
-//         console.log(user);
-//       if (user==null) {
-//         console.log("Auth Failed (mail doesn't exist)");
-//         res.json("Auth Failed");
-//       } else {
-//         bcrypt.compare(password, user.password).then(function (result) {
-//           // result == true
-//           console.log(result + "Auth Success password correct");
-//           res.json("Auth Success");
-//         });
-//       }
-//     })
-//     .catch((err) => console.log(err));
-// });
+router.post("/signin", userController.signin);
 
 module.exports = router;
