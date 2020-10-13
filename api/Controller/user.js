@@ -7,8 +7,7 @@ exports.signup = (req, res, next) => {
 
   const saltRounds = 10;
   const myPlaintextPassword = req.body.pass;
-  const image=req.file.path
-  console.log(image)
+console.log(req.file);
 
   bcrypt.genSalt(saltRounds, function (err, salt) {
     bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
@@ -21,7 +20,7 @@ exports.signup = (req, res, next) => {
         address: req.body.address,
         mobile_no: req.body.mobile_no,
         ward: req.body.ward,
-        image:image
+        image: (typeof req.file !== "undefined") ? req.file.path : 'uploads\\avatar.png'
       });
 
       user
