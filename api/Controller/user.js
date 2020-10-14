@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
+require("dotenv").config();
 const User = require("../models/user");
 const user = require("../models/user");
 
@@ -49,6 +51,53 @@ exports.signup = (req, res, next) => {
                 });
               })
           });
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//UserLogin
+exports.signin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  User.findOne({ email: email }, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(404).json(new Error("Failed"));
+    }
+    //  else {
+    //   console.log(result);
+    // }
+  })
+    .then((user) => {
+      if (user == null) {
+        //console.log("Auth Failed");
+        res.status(401).json("Auth Failed");
+      } else {
+        bcrypt.compare(password, user.password).then(function (result) {
+          // result == true
+          if (result) {
+            //Token generation
+            try {
+              const token = jwt.sign(
+                {
+                  id: user._id,
+                  name: user.name,
+                },
+                process.env.SECRET_KEY,
+                { expiresIn: "24h" }
+              );
+              res.status(200).json({ access_token: token });
+            } catch (e) {
+              throw Error("Error while Login");
+            }
+          } else {
+            res.status(401).json("Auth Failed");
+          }
         });
       }
     })
