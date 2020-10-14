@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../Controller/user");
 const multer = require("multer");
+const authCheck = require('../middleware/check-auth');
+const user = require("../models/user");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -35,34 +37,8 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-router.post("/signup",upload.single("profileImage"), userController.signup);
+router.post("/signup",authCheck,upload.single("profileImage"), userController.signup);
 
-// router.post("/signin", (req, res, next) => {
-//   const email = req.body.email;
-//   const password = req.body.password;
-
-//   user
-//     .findOne({ email: email }, (err, result) => {
-//       if (err) {
-//         console.log(err);
-//       } else {
-//         console.log(result);
-//       }
-//     })
-//     .then((user) => {
-//         console.log(user);
-//       if (user==null) {
-//         console.log("Auth Failed (mail doesn't exist)");
-//         res.json("Auth Failed");
-//       } else {
-//         bcrypt.compare(password, user.password).then(function (result) {
-//           // result == true
-//           console.log(result + "Auth Success password correct");
-//           res.json("Auth Success");
-//         });
-//       }
-//     })
-//     .catch((err) => console.log(err));
-// });
+router.post("/signin",userController.signin);
 
 module.exports = router;
