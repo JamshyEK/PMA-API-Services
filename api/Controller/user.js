@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/user");
 const user = require("../models/user");
+const { use } = require("../routes/user");
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -74,9 +75,10 @@ exports.signin = (req, res, next) => {
     // }
   })
     .then((user) => {
+      console.log(user);
       if (user == null) {
         //console.log("Auth Failed");
-        res.status(401).json("Auth Failed");
+        res.status(401).json({message:"Auth Failed"});
       } else {
         bcrypt.compare(password, user.password).then(function (result) {
           // result == true
@@ -96,7 +98,7 @@ exports.signin = (req, res, next) => {
               throw Error("Error while Login");
             }
           } else {
-            res.status(401).json("Auth Failed");
+            res.status(401).json({message:"Auth Failed"});
           }
         });
       }

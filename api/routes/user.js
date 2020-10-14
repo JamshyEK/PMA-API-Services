@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../Controller/user");
 const multer = require("multer");
+const authCheck = require('../middleware/check-auth');
+const user = require("../models/user");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -37,6 +39,6 @@ const upload = multer({
 
 router.post("/signup",upload.single("profileImage"), userController.signup);
 
-router.post("/signin", userController.signin);
+router.post("/signin",userController.signin);
 
 module.exports = router;
