@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/user");
 const user = require("../models/user");
-const { use } = require("../routes/user");
+const Requests = require("../models/requests");
+//const { use } = require("../routes/user");
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -38,19 +39,17 @@ exports.signup = (req, res, next) => {
                   : "uploads\\avatar.png",
             });
 
-            user
-              .save()
-              .then((result) => {
-                console.log("Saved");
-                res.status(201).json({
-                  id: result._id,
-                  name: result.name,
-                  email: result.email,
-                  credit: result.credit,
-                  ward: result.ward,
-                  image: result.image,
-                });
-              })
+            user.save().then((result) => {
+              console.log("Saved");
+              res.status(201).json({
+                id: result._id,
+                name: result.name,
+                email: result.email,
+                credit: result.credit,
+                ward: result.ward,
+                image: result.image,
+              });
+            });
           });
         });
       }
@@ -78,7 +77,7 @@ exports.signin = (req, res, next) => {
       console.log(user);
       if (user == null) {
         //console.log("Auth Failed");
-        res.status(401).json({message:"Auth Failed"});
+        res.status(401).json({ message: "Auth Failed" });
       } else {
         bcrypt.compare(password, user.password).then(function (result) {
           // result == true
@@ -89,6 +88,8 @@ exports.signin = (req, res, next) => {
                 {
                   id: user._id,
                   name: user.name,
+                  //
+                  ward: user.ward,
                 },
                 process.env.SECRET_KEY,
                 { expiresIn: "24h" }
@@ -98,10 +99,57 @@ exports.signin = (req, res, next) => {
               throw Error("Error while Login");
             }
           } else {
-            res.status(401).json({message:"Auth Failed"});
+            res.status(401).json({ message: "Auth Failed" });
           }
         });
       }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+exports.request = (req, res, next) => {
+  user_id = req.userData.id;
+  console.log(user_id);
+  const request = new Requests({
+    _id: new mongoose.Types.ObjectId(),
+    user: user_id,
+    requestType: req.body.requestType,
+    requestStaus: "Pending",
+    bulkRequestStaus: "No",
+  });
+  request
+    .save()
+    .then((result) => {
+      console.log("Request Saved");
+      res.json({
+        Request_id: result._id,
+        User_id: result.user,
+      });
+    })
+    .catch((err) => {
+      console.log("error");
+    });
+};
+
+//profile
+exports.profile = (req, res, next) => {
+  user_id = req.userData.id;
+  User.findOne({ _id: user_id })
+    .then((result) => {
+      console.log(result);
+      res.json({
+        id: result._id,
+        name:result.name,
+        email:result.email,
+        address:result.address,
+        mobile:result.mobile_no,
+        ward:result.ward,
+        credit:result.credit,
+        image:result.image
+      });
     })
     .catch((err) => {
       console.log(err);
