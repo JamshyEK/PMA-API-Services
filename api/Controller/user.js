@@ -5,6 +5,7 @@ require("dotenv").config();
 const User = require("../models/user");
 const user = require("../models/user");
 const Requests = require("../models/requests");
+const fs = require("fs");
 //const { use } = require("../routes/user");
 
 //User Registration
@@ -142,14 +143,69 @@ exports.profile = (req, res, next) => {
       console.log(result);
       res.json({
         id: result._id,
-        name:result.name,
-        email:result.email,
-        address:result.address,
-        mobile:result.mobile_no,
-        ward:result.ward,
-        credit:result.credit,
-        image:result.image
+        name: result.name,
+        email: result.email,
+        address: result.address,
+        mobile: result.mobile_no,
+        ward: result.ward,
+        credit: result.credit,
+        image: result.image,
       });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//update profile
+exports.update_profile = (req, res, next) => {
+  user_id = req.userData.id;
+
+  let name = req.body.name.trim();
+  let address = req.body.address.trim();
+  let mobile_no = req.body.mobile_no.trim();
+  let ward = req.body.ward.trim();
+
+  User.findOne({ _id: user_id })
+    .then((result) => {
+      let preImage = result.image.split("\\")[1];
+
+       //console.log(typeof req.file !== "undefined")
+
+      let image =
+        typeof req.file !== "undefined" ? req.file.path :result.image;
+
+      User.updateOne(
+        { _id: user_id },
+        {
+          name: name,
+          address: address,
+          mobile_no: mobile_no,
+          ward: ward,
+          image: image,
+        }
+      )
+        .exec()
+        .then((result) => {
+    
+
+          if(typeof req.file !== "undefined"){
+            if(preImage != "avatar.png"){
+              const pathToFile = "uploads/" + preImage;
+              try {
+                fs.unlinkSync(pathToFile);
+                console.log("Successfully deleted the file.");
+              } catch (err) {
+                throw err;
+              }
+            }
+         
+           }
+ 
+
+          res.json({ result: result, msg: "Profile Updated" });
+        });
     })
     .catch((err) => {
       console.log(err);
