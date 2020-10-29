@@ -111,6 +111,29 @@ exports.signin = (req, res, next) => {
     });
 };
 
+exports.request = (req, res, next) => {
+  user_id = req.userData.id;
+  console.log(user_id);
+  const request = new Requests({
+    _id: new mongoose.Types.ObjectId(),
+    user: user_id,
+    requestType: req.body.requestType,
+    requestStaus: "Pending",
+    bulkRequestStaus: "No",
+  });
+  request
+    .save()
+    .then((result) => {
+      console.log("Request Saved");
+      res.json({
+        Request_id: result._id,
+        User_id: result.user,
+      });
+    })
+    .catch((err) => {
+      console.log("error");
+    });
+};
 
 //profile
 exports.profile = (req, res, next) => {
