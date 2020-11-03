@@ -3,10 +3,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/user");
+const Requests = require("../models/requests");
 const user = require("../models/user");
+<<<<<<< HEAD
 const Requests = require("../models/requests");
 const fs = require("fs");
 //const { use } = require("../routes/user");
+=======
+>>>>>>> UserRequests
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -112,6 +116,7 @@ exports.signin = (req, res, next) => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //UserLogin
 exports.signin = (req, res, next) => {
   const email = req.body.email;
@@ -156,12 +161,27 @@ exports.signin = (req, res, next) => {
 exports.request = (req, res, next) => {
   user_id = req.userData.id;
   console.log(user_id);
+=======
+//Requests post
+exports.request = (req, res, next) => {
+  user_id = req.userData.id;
+  console.log(user_id);
+  var currentDate = new Date();
+>>>>>>> UserRequests
   const request = new Requests({
     _id: new mongoose.Types.ObjectId(),
     user: user_id,
     requestType: req.body.requestType,
+<<<<<<< HEAD
     requestStaus: "Pending",
     bulkRequestStaus: "No",
+=======
+    requestedDate: currentDate.toISOString(),
+    requestStaus: "Pending",
+    bulkRequestStaus: "No",
+    quantity: req.body.quantity,
+    image: typeof req.file !== "undefined" ? req.file.path : "",
+>>>>>>> UserRequests
   });
   request
     .save()
@@ -173,6 +193,7 @@ exports.request = (req, res, next) => {
       });
     })
     .catch((err) => {
+<<<<<<< HEAD
       console.log("error");
     });
 };
@@ -193,6 +214,19 @@ exports.profile = (req, res, next) => {
         credit: result.credit,
         image: result.image,
       });
+=======
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//all requests get by a user
+exports.requestall = (req, res, next) => {
+  user_id = req.userData.id;
+  Requests.find({ user: user_id })
+    .then((result) => {
+      res.status(200).json(result);
+>>>>>>> UserRequests
     })
     .catch((err) => {
       console.log(err);
@@ -200,6 +234,7 @@ exports.profile = (req, res, next) => {
     });
 };
 
+<<<<<<< HEAD
 //update profile
 exports.update_profile = (req, res, next) => {
   user_id = req.userData.id;
@@ -249,6 +284,15 @@ exports.update_profile = (req, res, next) => {
           res.json({ result: result, msg: "Profile Updated" });
         });
 >>>>>>> UserProfile
+=======
+//Delete Request
+exports.requestDelete = (req, res, next) => {
+  user_id = req.userData.id;
+  request_id = req.params.id;
+  Requests.deleteOne({ _id: request_id })
+    .then((result) => {
+      res.status(200).json(result);
+>>>>>>> UserRequests
     })
     .catch((err) => {
       console.log(err);

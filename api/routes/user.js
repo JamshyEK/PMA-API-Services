@@ -37,14 +37,19 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-router.post("/signup",upload.single("profileImage"), userController.signup);
+
+router.post("/signup",upload.single("Image"), userController.signup);
 
 router.post("/signin",userController.signin);
 
 router.get("/profile",authCheck,userController.profile);
 
-router.put("/update-profile",authCheck,upload.single("profileImage"),userController.update_profile);
+router.put("/update-profile",authCheck,upload.single("Image"),userController.update_profile);
 
-router.post("/request",authCheck,userController.request);
+router.post("/request",authCheck,upload.single("Image"),userController.request);
+
+router.get("/requestall",authCheck,userController.requestall);
+
+router.delete("/requestDelete/:id",authCheck,userController.requestDelete);
 
 module.exports = router;
