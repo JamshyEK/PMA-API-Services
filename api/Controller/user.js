@@ -4,7 +4,9 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/user");
 const user = require("../models/user");
-const { use } = require("../routes/user");
+const Requests = require("../models/requests");
+const fs = require("fs");
+//const { use } = require("../routes/user");
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -38,19 +40,17 @@ exports.signup = (req, res, next) => {
                   : "uploads\\avatar.png",
             });
 
-            user
-              .save()
-              .then((result) => {
-                console.log("Saved");
-                res.status(201).json({
-                  id: result._id,
-                  name: result.name,
-                  email: result.email,
-                  credit: result.credit,
-                  ward: result.ward,
-                  image: result.image,
-                });
-              })
+            user.save().then((result) => {
+              console.log("Saved");
+              res.status(201).json({
+                id: result._id,
+                name: result.name,
+                email: result.email,
+                credit: result.credit,
+                ward: result.ward,
+                image: result.image,
+              });
+            });
           });
         });
       }
@@ -78,7 +78,7 @@ exports.signin = (req, res, next) => {
       console.log(user);
       if (user == null) {
         //console.log("Auth Failed");
-        res.status(401).json({message:"Auth Failed"});
+        res.status(401).json({ message: "Auth Failed" });
       } else {
         bcrypt.compare(password, user.password).then(function (result) {
           // result == true
@@ -89,6 +89,8 @@ exports.signin = (req, res, next) => {
                 {
                   id: user._id,
                   name: user.name,
+                  //
+                  ward: user.ward,
                 },
                 process.env.SECRET_KEY,
                 { expiresIn: "24h" }
@@ -98,7 +100,7 @@ exports.signin = (req, res, next) => {
               throw Error("Error while Login");
             }
           } else {
-            res.status(401).json({message:"Auth Failed"});
+            res.status(401).json({ message: "Auth Failed" });
           }
         });
       }
@@ -109,6 +111,7 @@ exports.signin = (req, res, next) => {
     });
 };
 
+<<<<<<< HEAD
 //UserLogin
 exports.signin = (req, res, next) => {
   const email = req.body.email;
@@ -149,6 +152,103 @@ exports.signin = (req, res, next) => {
           }
         });
       }
+=======
+exports.request = (req, res, next) => {
+  user_id = req.userData.id;
+  console.log(user_id);
+  const request = new Requests({
+    _id: new mongoose.Types.ObjectId(),
+    user: user_id,
+    requestType: req.body.requestType,
+    requestStaus: "Pending",
+    bulkRequestStaus: "No",
+  });
+  request
+    .save()
+    .then((result) => {
+      console.log("Request Saved");
+      res.json({
+        Request_id: result._id,
+        User_id: result.user,
+      });
+    })
+    .catch((err) => {
+      console.log("error");
+    });
+};
+
+//profile
+exports.profile = (req, res, next) => {
+  user_id = req.userData.id;
+  User.findOne({ _id: user_id })
+    .then((result) => {
+      console.log(result);
+      res.json({
+        id: result._id,
+        name: result.name,
+        email: result.email,
+        address: result.address,
+        mobile: result.mobile_no,
+        ward: result.ward,
+        credit: result.credit,
+        image: result.image,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//update profile
+exports.update_profile = (req, res, next) => {
+  user_id = req.userData.id;
+
+  let name = req.body.name.trim();
+  let address = req.body.address.trim();
+  let mobile_no = req.body.mobile_no.trim();
+  let ward = req.body.ward.trim();
+
+  User.findOne({ _id: user_id })
+    .then((result) => {
+      let preImage = result.image.split("\\")[1];
+
+       //console.log(typeof req.file !== "undefined")
+
+      let image =
+        typeof req.file !== "undefined" ? req.file.path :result.image;
+
+      User.updateOne(
+        { _id: user_id },
+        {
+          name: name,
+          address: address,
+          mobile_no: mobile_no,
+          ward: ward,
+          image: image,
+        }
+      )
+        .exec()
+        .then((result) => {
+    
+
+          if(typeof req.file !== "undefined"){
+            if(preImage != "avatar.png"){
+              const pathToFile = "uploads/" + preImage;
+              try {
+                fs.unlinkSync(pathToFile);
+                console.log("Successfully deleted the file.");
+              } catch (err) {
+                throw err;
+              }
+            }
+         
+           }
+ 
+
+          res.json({ result: result, msg: "Profile Updated" });
+        });
+>>>>>>> UserProfile
     })
     .catch((err) => {
       console.log(err);
