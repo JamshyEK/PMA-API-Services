@@ -3,8 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/user");
+const Requests = require("../models/requests");
 const user = require("../models/user");
-const { use } = require("../routes/user");
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -38,19 +38,17 @@ exports.signup = (req, res, next) => {
                   : "uploads\\avatar.png",
             });
 
-            user
-              .save()
-              .then((result) => {
-                console.log("Saved");
-                res.status(201).json({
-                  id: result._id,
-                  name: result.name,
-                  email: result.email,
-                  credit: result.credit,
-                  ward: result.ward,
-                  image: result.image,
-                });
-              })
+            user.save().then((result) => {
+              console.log("Saved");
+              res.status(201).json({
+                id: result._id,
+                name: result.name,
+                email: result.email,
+                credit: result.credit,
+                ward: result.ward,
+                image: result.image,
+              });
+            });
           });
         });
       }
@@ -78,7 +76,7 @@ exports.signin = (req, res, next) => {
       console.log(user);
       if (user == null) {
         //console.log("Auth Failed");
-        res.status(401).json({message:"Auth Failed"});
+        res.status(401).json({ message: "Auth Failed" });
       } else {
         bcrypt.compare(password, user.password).then(function (result) {
           // result == true
@@ -98,10 +96,67 @@ exports.signin = (req, res, next) => {
               throw Error("Error while Login");
             }
           } else {
-            res.status(401).json({message:"Auth Failed"});
+            res.status(401).json({ message: "Auth Failed" });
           }
         });
       }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//Requests post
+exports.request = (req, res, next) => {
+  user_id = req.userData.id;
+  console.log(user_id);
+  var currentDate = new Date();
+  const request = new Requests({
+    _id: new mongoose.Types.ObjectId(),
+    user: user_id,
+    requestType: req.body.requestType,
+    requestedDate: currentDate.toISOString(),
+    requestStaus: "Pending",
+    bulkRequestStaus: "No",
+    quantity: req.body.quantity,
+    image: typeof req.file !== "undefined" ? req.file.path : "",
+  });
+  request
+    .save()
+    .then((result) => {
+      console.log("Request Saved");
+      res.json({
+        Request_id: result._id,
+        User_id: result.user,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//all requests get by a user
+exports.requestall = (req, res, next) => {
+  user_id = req.userData.id;
+  Requests.find({ user: user_id })
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
+//Delete Request
+exports.requestDelete = (req, res, next) => {
+  user_id = req.userData.id;
+  request_id = req.params.id;
+  Requests.deleteOne({ _id: request_id })
+    .then((result) => {
+      res.status(200).json(result);
     })
     .catch((err) => {
       console.log(err);
