@@ -5,6 +5,7 @@ require("dotenv").config();
 const User = require("../models/user");
 const Requests = require("../models/requests");
 const user = require("../models/user");
+const fs = require("fs");
 
 //User Registration
 exports.signup = (req, res, next) => {
