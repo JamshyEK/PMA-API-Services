@@ -4,6 +4,9 @@ require("dotenv").config();
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const userRouter = require("./api/routes/user");
+const adminRouter=require("./api/routes/admin");
+const kudumbashreeRouter=require("./api/routes/kudumbashree");
 
 //----------server database-------------
 // mongoose
@@ -40,7 +43,7 @@ mongoose
     }
   );
 
-const userRouter = require("./api/routes/user");
+
 
 app.use(morgan("dev"));
 app.use('/uploads',express.static('uploads'));
@@ -48,5 +51,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use("/user", userRouter);
+app.use("/admin",adminRouter);
+app.use("/kudumbashree",kudumbashreeRouter);
 
 module.exports = app;

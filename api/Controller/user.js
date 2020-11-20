@@ -88,6 +88,7 @@ exports.signin = (req, res, next) => {
                 {
                   id: user._id,
                   name: user.name,
+                  role:user.role
                 },
                 process.env.SECRET_KEY,
                 { expiresIn: "24h" }
@@ -119,7 +120,7 @@ exports.request = (req, res, next) => {
     requestType: req.body.requestType,
     requestedDate: currentDate.toISOString(),
     requestStaus: "Pending",
-    bulkRequestStaus: "No",
+    // bulkRequestStaus: "No",
     quantity: req.body.quantity,
     image: typeof req.file !== "undefined" ? req.file.path : "",
   });

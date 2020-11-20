@@ -6,7 +6,7 @@ const requestsSchema=mongoose.Schema({
     requestType:{ type: String , required: true},
     requestStaus:{ type: String , required: true},
     image: { type: String },
-    bulkRequestStaus:{ type: String , required: true},
+    bulkRequestStaus: { type: Boolean, default: false ,required: true},
     quantity:{ type: String },
     requestedDate:{type:Date},
     approvedDate:{type:Date},
