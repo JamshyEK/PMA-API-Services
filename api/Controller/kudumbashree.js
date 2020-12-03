@@ -1,7 +1,8 @@
 const Requests = require("../models/requests");
+const varnames=require('../varnames');
 
 exports.allRequests=(req,res,next)=>{
-    Requests.find({requestStaus:"Approved",bulkRequestStaus:true})
+    Requests.find({requestStaus:varnames.Approved,bulkRequestStaus:true})
     .then((result) => {
       res.json(result);
     })
@@ -17,7 +18,7 @@ exports.allRequests=(req,res,next)=>{
 exports.updateRequest=(req,res,next)=>{
   const req_id=req.params.id;
   const date=new Date();
-  Requests.updateOne({ _id: req_id }, { $set: { requestStaus: 'Collected', collectedDate:date} })
+  Requests.updateOne({ _id: req_id }, { $set: { requestStaus: varnames.Collected, collectedDate:date} })
   .then((result) => {
     res.json(result);
   })

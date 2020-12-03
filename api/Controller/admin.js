@@ -1,6 +1,7 @@
 const Requests = require("../models/requests");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const varnames=require('../varnames');
 const mongoose = require("mongoose");
 //allRequests
 exports.allRequests = (req, res, next) => {
@@ -18,108 +19,55 @@ exports.allRequests = (req, res, next) => {
 exports.updateRequests = (req, res, next) => {
   const req_id = req.body.req_id;
   const req_status = req.body.req_status;
-  const date =new Date();
-  Requests.updateOne({ _id: req_id },{ $set: { requestStaus: req_status, approvedDate:date} })
+  const date = new Date();
+  Requests.updateOne(
+    { _id: req_id },
+    { $set: { requestStaus: req_status, approvedDate: date } }
+  )
     .then((done) => {
       Requests.findOne({ _id: req_id })
         .populate("user", "ward")
         .then((products) => {
           console.log(products.user.ward);
           console.log(products);
-          Requests.find({})
-            .populate({ path: "user",match: { ward: products.user.ward }  })
-            .then(async(prod) => {
-              
-              //console.log(prod)
-            let fprd=await prod.filter(x=>{
-                console.log(x.user!==null);
-                x.user==null
-              }).length;
-            console.log(fprd);
-
-
-
-              // if (prod >= 4) {
-              //   // Requests.updateMany({ bulkRequestStaus: false },{bulkRequestStaus:true})
-              //   //   .populate({
-              //   //     path: "user",
-              //   //     match: { ward: products.user.ward },
-              //   //   })
-              //   //   .then((p) => console.log(p));
-              //   // console.log("aaaaaaaa");
-              // }
+          
+          Requests.find({bulkRequestStaus:false,requestStaus:varnames.Approved})
+            .populate({ path: "user", match: { ward: products.user.ward } })
+            .then((result) => {
+             // console.log(result[0].user)
+              result = result.filter(user => user.user != null);
+             // console.log(result.length);
+              if(result.length>=varnames.bulkrequestlimit){
+                Requests.updateMany( { _id: { $in:result} },
+                  { $set: { bulkRequestStaus : true } },
+                  {multi: true}).then(result=>res.status(200).json(result))
+              }else{
+                res.status(200).json("inserted")
+              }
+           
+             // console.log(result);
+            //  test=result.map(x=>x._id)
+            //  console.log(test)
+            //   res.json(result.length);
             });
+         
         });
     })
     .catch((err) => {
       console.log(err);
+      res.status(500).json(err);
     });
-  // Requests.updateOne(
-  //   { _id: req_id },
-  //   {
-  //     requestStaus: req_status,
-  //   }
-  // )
-  //   .then((result) => {
-  //     //     console.log(result);
-  //     //     //Requests.updateOne()
-  //     //     res.json(result);
-  //     // }
-
-  //     const test = new Promise(async(resolve, reject) => {
-
-  //        let test= await Requests.aggregate([
-  //           {
-  //             $lookup: {
-  //               from: "User",
-  //               localField: "user",
-  //               foreignField: "_id",
-  //               as: "wardrequest",
-  //             },
-  //           },
-  //           { $unwind: "$request" },
-  //         ])
-  //       resolve(test);
-  //       reject(console.log("err"));
-  //     });
-
-  //     test.then((result) => {
-  //         console.log(result);
-  //       })
-  //       .catch();
-  //     // const wardrequest=async ()=>{await Requests.aggregate([
-  //     //       { $lookup:{
-  //     //           from: User,
-  //     //                localField: "user",
-  //     //                foreignField: "_id",
-  //     //                as: "wardrequest"
-  //     //         }
-  //     //         },
-  //     //         { "$unwind": "$request" }
-  //     //   ]);
-  //     // }
-
-  //     // wardrequest();
-  //     //   console.log();
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //     res.status(500).json(err);
-  //   });
-  console.log(req_id, req_status);
 };
 
-
-exports.registerKudumbashree=(req,res,next)=>{
+exports.registerKudumbashree = (req, res, next) => {
   const saltRounds = 10;
   const myPlaintextPassword = req.body.password;
 
-  User
-    .findOne({ email: req.body.email }, (err, result) => {
-      if (err) {
-        res.status(404).json(new Error("Error"));
-      }
-    })
+  User.findOne({ email: req.body.email }, (err, result) => {
+    if (err) {
+      res.status(404).json(new Error("Error"));
+    }
+  })
     .then((user) => {
       if (user != null) {
         res.status(409).json("Email Exist");
@@ -132,8 +80,8 @@ exports.registerKudumbashree=(req,res,next)=>{
               name: req.body.name,
               password: hash,
               email: req.body.email,
-              address:req.body.address,
-              role:"kudumbashree"
+              address: req.body.address,
+              role: "kudumbashree",
             });
 
             user.save().then((result) => {
@@ -152,11 +100,8 @@ exports.registerKudumbashree=(req,res,next)=>{
       console.log(err);
       res.status(500).json(err);
     });
+};
 
-}
-
-
-exports.frontpagePosts=(req,res,next)=>{
-const videoLink = req.body.videoLink;
-
-}
+exports.frontpagePosts = (req, res, next) => {
+  const videoLink = req.body.videoLink;
+};

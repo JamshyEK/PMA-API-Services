@@ -6,6 +6,7 @@ const User = require("../models/user");
 const Requests = require("../models/requests");
 const user = require("../models/user");
 const fs = require("fs");
+const varnames=require('../varnames');
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -119,7 +120,7 @@ exports.request = (req, res, next) => {
     user: user_id,
     requestType: req.body.requestType,
     requestedDate: currentDate.toISOString(),
-    requestStaus: "Pending",
+    requestStaus: varnames.Pending,
     // bulkRequestStaus: "No",
     quantity: req.body.quantity,
     image: typeof req.file !== "undefined" ? req.file.path : "",
