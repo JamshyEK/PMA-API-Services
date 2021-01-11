@@ -10,6 +10,7 @@ const varnames=require('../varnames');
 
 //User Registration
 exports.signup = (req, res, next) => {
+  console.log(req);
   const saltRounds = 10;
   const myPlaintextPassword = req.body.password;
 
@@ -21,6 +22,7 @@ exports.signup = (req, res, next) => {
     })
     .then((user) => {
       if (user != null) {
+        console.log("email exist");
         res.status(409).json("Email Exist");
       } else {
         bcrypt.genSalt(saltRounds, function (err, salt) {
@@ -118,7 +120,7 @@ exports.request = (req, res, next) => {
   const request = new Requests({
     _id: new mongoose.Types.ObjectId(),
     user: user_id,
-    requestType: req.body.requestType,
+    requestType: req.body.type,
     requestedDate: currentDate.toISOString(),
     requestStaus: varnames.Pending,
     // bulkRequestStaus: "No",
@@ -129,7 +131,7 @@ exports.request = (req, res, next) => {
     .save()
     .then((result) => {
       console.log("Request Saved");
-      res.json({
+      res.status(201).json({
         Request_id: result._id,
         User_id: result.user,
       });
