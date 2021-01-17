@@ -52,4 +52,8 @@ router.get("/requestall",authCheck,userController.requestall);
 
 router.delete("/requestDelete/:id",authCheck,userController.requestDelete);
 
+router.post("/razorpay",authCheck,userController.razor_payment);
+
+router.put("/updateCredit",authCheck,userController.updateCredit);
+
 module.exports = router;

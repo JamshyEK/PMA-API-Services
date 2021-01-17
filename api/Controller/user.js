@@ -6,7 +6,9 @@ const User = require("../models/user");
 const Requests = require("../models/requests");
 const user = require("../models/user");
 const fs = require("fs");
-const varnames=require('../varnames');
+const varnames = require("../varnames");
+const shortid = require("shortid");
+const Razorpay = require("razorpay");
 
 //User Registration
 exports.signup = (req, res, next) => {
@@ -91,7 +93,7 @@ exports.signin = (req, res, next) => {
                 {
                   id: user._id,
                   name: user.name,
-                  role:user.role
+                  role: user.role,
                 },
                 process.env.SECRET_KEY,
                 { expiresIn: "24h" }
@@ -169,8 +171,6 @@ exports.requestDelete = (req, res, next) => {
     });
 };
 
-
-
 //profile
 exports.profile = (req, res, next) => {
   user_id = req.userData.id;
@@ -207,10 +207,10 @@ exports.update_profile = (req, res, next) => {
     .then((result) => {
       let preImage = result.image.split("\\")[1];
 
-       //console.log(typeof req.file !== "undefined")
+      //console.log(typeof req.file !== "undefined")
 
       let image =
-        typeof req.file !== "undefined" ? req.file.path :result.image;
+        typeof req.file !== "undefined" ? req.file.path : result.image;
 
       User.updateOne(
         { _id: user_id },
@@ -224,10 +224,8 @@ exports.update_profile = (req, res, next) => {
       )
         .exec()
         .then((result) => {
-    
-
-          if(typeof req.file !== "undefined"){
-            if(preImage != "avatar.png"){
+          if (typeof req.file !== "undefined") {
+            if (preImage != "avatar.png") {
               const pathToFile = "uploads/" + preImage;
               try {
                 fs.unlinkSync(pathToFile);
@@ -236,9 +234,7 @@ exports.update_profile = (req, res, next) => {
                 throw err;
               }
             }
-         
-           }
- 
+          }
 
           res.json({ result: result, msg: "Profile Updated" });
         });
@@ -248,3 +244,64 @@ exports.update_profile = (req, res, next) => {
       res.status(500).json(err);
     });
 };
+
+
+const razorpay = new Razorpay({
+	key_id:varnames.razorpay_key_id,
+	key_secret: varnames.razorpay_secret
+})
+//payment
+exports.razor_payment = async (req, res, next) => {
+  const payment_capture = 1;
+  const amount = await req.body.credit;
+  const currency = "INR";
+
+  const options = {
+    amount: amount * 100,
+    currency,
+    receipt: shortid.generate(),
+    payment_capture,
+  };
+
+  try {
+    const response = await razorpay.orders.create(options);
+    console.log("===========", response);
+    res.json({
+      id: response.id,
+      currency: response.currency,
+      amount: response.amount,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+//updateCredit
+exports.updateCredit=(req,res,next)=>{
+  user_id = req.userData.id;
+
+   
+
+  User.findOne({ _id: user_id })
+    .then((result) => {
+    
+      let credit =parseInt(result.credit)+parseInt(req.body.credit)
+ 
+      User.updateOne(
+        { _id: user_id },
+        {
+          credit:credit
+        }
+      )
+        .exec()
+        .then((result) => {
+          res.json({ result: result,credit:credit ,msg: "credit updated" });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+
+}

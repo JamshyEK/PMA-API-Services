@@ -2,8 +2,9 @@ const Requests = require("../models/requests");
 const varnames=require('../varnames');
 
 exports.allRequests=(req,res,next)=>{
-    Requests.find({requestStaus:varnames.Approved,bulkRequestStaus:true})
+    Requests.find({requestStaus:varnames.Approved,bulkRequestStaus:true}).populate("user")
     .then((result) => {
+      console.log(result)
       res.json(result);
     })
     .catch((err) => {
